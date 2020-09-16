@@ -1,0 +1,71 @@
+version: '3.3'
+
+services:
+    haproxy:
+        build: ./docker/haproxy
+        ports:
+            - 15672:15672
+            - 5672:5672
+            - 1936:1936
+        networks:
+            - prod
+        links:
+            - rabbitmq-01
+            - rabbitmq-02
+            - rabbitmq-03
+
+    rabbitmq-01:
+        build: ./docker/rabbitmq
+        hostname: rabbitmq-01
+        environment:
+            - RABBITMQ_DEFAULT_VHOST=/
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=Passw0rd
+            - RABBITMQ_ERLANG_COOKIE="MY-SECRET-KEY-123"
+        networks:
+            - prod
+
+    rabbitmq-02:
+        build: ./docker/rabbitmq
+        hostname: rabbitmq-02
+        environment:
+            - RABBITMQ_DEFAULT_VHOST=/
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=Passw0rd
+            - RABBITMQ_ERLANG_COOKIE="MY-SECRET-KEY-123"
+        networks:
+            - prod
+        links:
+            - rabbitmq-01
+
+    rabbitmq-03:
+        build: ./docker/rabbitmq
+        hostname: rabbitmq-03
+        environment:
+            - RABBITMQ_DEFAULT_VHOST=/
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=Passw0rd
+            - RABBITMQ_ERLANG_COOKIE="MY-SECRET-KEY-123"
+        networks:
+            - prod
+        links:
+            - rabbitmq-01
+            - rabbitmq-02
+
+    php71-cli:
+        build: ./docker/php71-cli
+        volumes:
+            - "./producer/php71:/app"
+        networks:
+          - prod
+
+    golang:
+        build: ./docker/golang
+        volumes:
+            - "./producer/go:/app"
+        networks:
+          - prod
+
+networks:
+    prod:
+        external: true
